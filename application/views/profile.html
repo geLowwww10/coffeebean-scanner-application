@@ -1,52 +1,53 @@
 <!DOCTYPE html>
-<html lang="en" class="transition duration-300">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Profile</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <style>
     body {
       font-family: 'Cormorant', serif;
     }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center bg-white text-[#4B3621] dark:bg-gray-900 dark:text-white">
+<body class="min-h-screen flex bg-white text-[#4B3621]">
 
-  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-10 max-w-md w-full text-center space-y-6">
-    <h1 class="text-3xl font-bold">Welcome, <span id="username">User</span>!</h1>
-
-    <button id="logoutBtn" class="mt-4 w-full py-2 rounded-full bg-red-600 hover:bg-red-700 text-white font-semibold">
+  <!-- Sidebar -->
+  <div class="w-64 h-screen bg-[#4B3621] text-white p-6 flex flex-col items-center">
+    <i class="fas fa-user-circle text-6xl mb-4"></i>
+    <h1 class="text-xl font-bold text-center mb-4" id="username">User</h1>
+    <div class="w-full space-y-4">
+      <a href="/users/dashboard" class="w-full py-2 px-4 rounded hover:bg-gray-700 text-white font-semibold text-center block">Dashboard</a>
+      <a href="/users/scan" class="w-full py-2 px-4 rounded hover:bg-gray-700 text-white font-semibold text-center block">Scan</a>
+      <a href="/users/about" class="w-full py-2 px-4 rounded hover:bg-gray-700 text-white font-semibold text-center block">About</a>
+    </div>
+    <button id="logoutBtn" class="w-full py-2 px-4 rounded bg-red-600 hover:bg-red-700 text-white font-semibold mt-auto">
       Logout
     </button>
+  </div>
 
-    <div class="mt-6">
-      <label class="flex items-center justify-center gap-2 cursor-pointer">
-        <input type="checkbox" id="darkToggle" class="hidden">
-        <span class="w-10 h-5 flex items-center bg-gray-300 dark:bg-gray-600 rounded-full p-1">
-          <span class="w-4 h-4 bg-white dark:bg-black rounded-full shadow-md transform transition duration-300" id="toggleKnob"></span>
-        </span>
-        <span class="text-sm">Dark Mode</span>
-      </label>
+  <!-- Main Content -->
+  <div class="flex-1 p-10 flex items-center justify-center">
+    <div class="text-center space-y-4">
+      <h2 class="text-4xl font-bold">Welcome to your Profile</h2>
+      <p class="text-lg">Here you can manage your settings and logout securely.</p>
     </div>
   </div>
 
   <script>
-    // Replace username from server-side rendered script (injected when sending file)
-    document.getElementById("username").innerText = "<%= user.name %>";
+    // Fetch logged-in user's name
+    fetch("/api/user")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("username").innerText = data.name;
+      });
 
-    // Logout button
+    // Logout
     document.getElementById("logoutBtn").addEventListener("click", () => {
-      window.location.href = "/users/logout"; // You must define this route in server.js
-    });
-
-    // Dark mode toggle
-    const toggle = document.getElementById("darkToggle");
-    const htmlEl = document.documentElement;
-
-    toggle.addEventListener("change", () => {
-      htmlEl.classList.toggle("dark");
+      window.location.href = "/users/logout";
     });
   </script>
 </body>

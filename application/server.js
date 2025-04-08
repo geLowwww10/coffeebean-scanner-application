@@ -16,30 +16,21 @@ initializePassport(passport);
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// Serve all static files (HTML, CSS, JS, images, etc.)
 app.use(express.static(path.join(__dirname, "views")));
-
-// Session & Passport
-app.use(
-  session({
-    secret: "secret",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
+app.use(session({
+  secret: "secret",
+  resave: false,
+  saveUninitialized: false,
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-// -------- ROUTES -------- //
-
-// Home -> redirect to login
+// Routes
 app.get("/", (req, res) => {
   res.redirect("/users/login");
 });
 
-// Public pages
 app.get("/users/login", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "login.html"));
 });
@@ -52,7 +43,6 @@ app.get("/users/about", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "about.html"));
 });
 
-// Protected pages
 app.get("/users/dashboard", checkAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, "views", "dashboard.html"));
 });
@@ -63,6 +53,14 @@ app.get("/users/scan", checkAuthenticated, (req, res) => {
 
 app.get("/users/profile", checkAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, "views", "profile.html"));
+});
+
+// ✅ NEW: API route to send user info
+app.get("/api/user", checkAuthenticated, (req, res) => {
+  res.json({
+    name: req.user.name,
+    email: req.user.email,
+  });
 });
 
 // Logout
@@ -133,7 +131,7 @@ app.post("/users/login", (req, res, next) => {
   })(req, res, next);
 });
 
-// Middleware to protect pages
+// Middleware
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
@@ -141,7 +139,6 @@ function checkAuthenticated(req, res, next) {
   res.redirect("/users/login");
 }
 
-// Start server
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
