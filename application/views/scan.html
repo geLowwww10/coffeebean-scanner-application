@@ -13,44 +13,148 @@
       font-family: 'Cormorant', serif;
       background-color: #fdfaf6;
     }
+    .quality-bar {
+      height: 20px;
+      background: #E8DCD5;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .quality-fill {
+      height: 100%;
+      background: #4B3621;
+      transition: width 0.5s ease-out;
+    }
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #4B3621;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .preview-image {
+      max-width: 100%;
+      max-height: 300px;
+      margin: 20px auto;
+      display: none;
+    }
   </style>  
 </head>
 <body class="flex flex-col min-h-screen bg-[#f5f5f5]">
+  <!-- Loading Overlay -->
+  <div id="loading" class="loading hidden">
+    <div class="loading-spinner"></div>
+  </div>
 
   <!-- MAIN CONTENT -->
   <main class="flex-grow flex flex-col items-center justify-center p-6">
     <h1 class="text-4xl font-bold text-[#4B3621] mb-6">Scan Coffee Bean</h1>
-    <video id="camera" autoplay class="rounded-lg shadow-md border-4 border-[#4B3621] w-full max-w-md"></video>
-    <button onclick="captureImage()" class="mt-6 px-6 py-2 bg-[#4B3621] text-white rounded-full hover:bg-black">
-      Capture
-    </button>
-    <div class="text-center mt-10">
+    
+    <!-- Camera Section -->
+    <div class="w-full max-w-md">
+      <video id="camera" autoplay class="rounded-lg shadow-md border-4 border-[#4B3621] w-full"></video>
+      <canvas id="canvas" class="hidden"></canvas>
+      <img id="preview" class="preview-image rounded-lg shadow-md border-4 border-[#4B3621]">
+    </div>
+
+    <!-- Controls -->
+    <div class="flex space-x-4 mt-6">
+      <button onclick="captureImage()" class="px-6 py-2 bg-[#4B3621] text-white rounded-full hover:bg-black transition">
+        Capture
+      </button>
+      <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+      <button onclick="document.getElementById('fileInput').click()" class="px-6 py-2 bg-[#4B3621] text-white rounded-full hover:bg-black transition">
+        Upload Image
+      </button>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results" class="hidden w-full max-w-md mt-8 p-6 bg-white rounded-lg shadow-lg">
+      <h2 class="text-2xl font-bold text-[#4B3621] mb-4">Coffee Bean Quality Analysis</h2>
+      <div class="space-y-4">
+        <div class="quality-item">
+          <label class="font-medium text-[#4B3621]">Flavor:</label>
+          <div class="quality-bar mt-2">
+            <div id="flavor-fill" class="quality-fill" style="width: 0%"></div>
+          </div>
+          <span id="flavor-value" class="text-sm mt-1 block"></span>
+        </div>
+        <div class="quality-item">
+          <label class="font-medium text-[#4B3621]">Aroma:</label>
+          <div class="quality-bar mt-2">
+            <div id="aroma-fill" class="quality-fill" style="width: 0%"></div>
+          </div>
+          <span id="aroma-value" class="text-sm mt-1 block"></span>
+        </div>
+        <div class="quality-item">
+          <label class="font-medium text-[#4B3621]">Body:</label>
+          <div class="quality-bar mt-2">
+            <div id="body-fill" class="quality-fill" style="width: 0%"></div>
+          </div>
+          <span id="body-value" class="text-sm mt-1 block"></span>
+        </div>
+        <div class="quality-item">
+          <label class="font-medium text-[#4B3621]">Acidity:</label>
+          <div class="quality-bar mt-2">
+            <div id="acidity-fill" class="quality-fill" style="width: 0%"></div>
+          </div>
+          <span id="acidity-value" class="text-sm mt-1 block"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-10 space-x-4">
       <a href="/users/dashboard" class="inline-block px-6 py-3 bg-[#4B3621] text-white rounded-full hover:bg-black transition">
         ← Back to Dashboard
       </a>
+      <a href="/users/history" class="inline-block px-6 py-3 bg-[#4B3621] text-white rounded-full hover:bg-black transition">
+        View History
+      </a>
     </div>
-  </div>
   </main>
 
-  <!-- FOOTER -->
+  <!-- Footer -->
   <footer class="bg-black text-white py-8">
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
+      <!-- Left side -->
       <div>
         <h3 class="font-bold text-lg mb-2 leading-snug">
           WE DO NOT SIMPLY<br>MAKE COFFEE, WE<br><span class="text-white">CREATE MEMORIES.</span>
         </h3>
         <p class="mt-4">&copy; 2025 Timpla by: Antimano. All rights reserved.</p>
       </div>
+
+      <!-- Right side -->
       <div class="space-y-2 md:text-right">
         <p>112 Dumandan St., Evangelista St.,<br>Santolan, Pasig City, Philippines, 1610</p>
         <p class="flex justify-start md:justify-end items-center space-x-2">
-          <i class="fas fa-phone-alt"></i><span>+63 915 301 2132</span>
+          <i class="fas fa-phone-alt"></i>
+          <span>+63 915 301 2132</span>
         </p>
+
         <div class="flex justify-start md:justify-end space-x-4 text-xl mt-2">
-          <a href="https://www.instagram.com/timplabyantimano/" target="_blank" class="hover:text-blue-400"><i class="fab fa-instagram"></i></a>
-          <a href="https://www.facebook.com/Timplabyantimano" target="_blank" class="hover:text-blue-400"><i class="fab fa-facebook-f"></i></a>
-          <a href="https://www.tiktok.com/@timpla.by.antimano" target="_blank" class="hover:text-blue-400"><i class="fab fa-tiktok"></i></a>
+          <a href="https://www.instagram.com/timplabyantimano/" target="_blank" class="hover:text-blue-400" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="https://www.facebook.com/Timplabyantimano" target="_blank" class="hover:text-blue-400" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://www.tiktok.com/@timpla.by.antimano" target="_blank" class="hover:text-blue-400" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
         </div>
+
         <div class="flex justify-start md:justify-end space-x-4 mt-2 text-xs">
           <a href="#" class="hover:underline">Privacy Policy</a>
           <a href="#" class="hover:underline">Terms & Conditions</a>
@@ -61,20 +165,108 @@
 
   <script>
     const video = document.getElementById('camera');
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then((stream) => {
-        video.srcObject = stream;
-      })
-      .catch((err) => {
-        alert('Error accessing camera: ' + err);
-      });
+    const canvas = document.getElementById('canvas');
+    const preview = document.getElementById('preview');
+    const loading = document.getElementById('loading');
+    const results = document.getElementById('results');
+    let stream = null;
 
-    function captureImage() {
-      alert("Captured! (Add image processing code here.)");
+    // Initialize camera
+    async function initCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+      } catch (err) {
+        console.error('Error accessing camera:', err);
+        alert('Error accessing camera. Please make sure you have granted camera permissions.');
+      }
     }
 
-    document.getElementById('menu-toggle').addEventListener('click', () => {
-      document.getElementById('mobile-menu').classList.toggle('hidden');
+    initCamera();
+
+    // Capture image from camera
+    async function captureImage() {
+      loading.classList.remove('hidden');
+      video.style.display = 'none';
+      preview.style.display = 'block';
+      
+      // Set canvas dimensions to match video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      // Draw video frame to canvas
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      
+      // Show preview
+      preview.src = canvas.toDataURL('image/jpeg');
+      
+      // Convert canvas to blob
+      canvas.toBlob(sendImageToServer, 'image/jpeg');
+    }
+
+    // Handle file upload
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        loading.classList.remove('hidden');
+        video.style.display = 'none';
+        preview.style.display = 'block';
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+        
+        sendImageToServer(file);
+      }
+    }
+
+    // Send image to server
+    async function sendImageToServer(blob) {
+      try {
+        const formData = new FormData();
+        formData.append('image', blob);
+
+        const response = await fetch('/users/scan/predict', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          updateResults(data.predictions);
+        } else {
+          throw new Error(data.error || 'Failed to process image');
+        }
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        loading.classList.add('hidden');
+      }
+    }
+
+    // Update results display
+    function updateResults(predictions) {
+      results.classList.remove('hidden');
+
+      // Update each quality bar
+      const qualities = ['flavor', 'aroma', 'body', 'acidity'];
+      qualities.forEach(quality => {
+        const value = predictions[quality];
+        const percentage = (value / 10) * 100;
+        document.getElementById(`${quality}-fill`).style.width = `${percentage}%`;
+        document.getElementById(`${quality}-value`).textContent = `${value.toFixed(2)}/10`;
+      });
+    }
+
+    // Reset UI when leaving page
+    window.addEventListener('beforeunload', () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
     });
   </script>
 </body>
