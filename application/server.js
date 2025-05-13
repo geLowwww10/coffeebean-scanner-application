@@ -120,19 +120,86 @@ app.post("/users/scan/predict", checkAuthenticated, upload.single("image"), asyn
   try {
     if (!req.file) return res.status(400).json({ success: false, error: "Please upload an image" });
 
-    const python = spawn("python", [path.join(__dirname, "../ml_model/predict.py"), req.file.path]);
-    let result = "";
+    // Get absolute paths
+    const pythonPath = path.resolve(__dirname, "../venv310/Scripts/python.exe");
+    const scriptPath = path.resolve(__dirname, "../ml_model/predict.py");
+    const imagePath = path.resolve(req.file.path);
 
-    python.stdout.on("data", data => result += data.toString());
-    python.stderr.on("data", data => console.error("Python error:", data.toString()));
+    // Log paths for debugging
+    console.log("Python Path:", pythonPath);
+    console.log("Script Path:", scriptPath);
+    console.log("Image Path:", imagePath);
+
+    // Check if paths exist
+    if (!fs.existsSync(pythonPath)) {
+      throw new Error(`Python interpreter not found at: ${pythonPath}`);
+    }
+    if (!fs.existsSync(scriptPath)) {
+      throw new Error(`Prediction script not found at: ${scriptPath}`);
+    }
+    if (!fs.existsSync(imagePath)) {
+      throw new Error(`Uploaded image not found at: ${imagePath}`);
+    }
+
+    // Set up Python process with environment variables
+    const env = {
+      ...process.env,
+      PYTHONPATH: path.resolve(__dirname, "../ml_model"),
+      PYTHONUNBUFFERED: "1"
+    };
+
+    const python = spawn(pythonPath, [scriptPath, imagePath], { env });
+    let result = "";
+    let errorOutput = "";
+
+    python.stdout.on("data", data => {
+      const output = data.toString();
+      console.log("Python stdout:", output);
+      result += output;
+    });
+    
+    python.stderr.on("data", data => {
+      const error = data.toString();
+      console.error("Python stderr:", error);
+      errorOutput += error;
+    });
+
+    python.on("error", (error) => {
+      console.error("Failed to start Python process:", error);
+      throw error;
+    });
 
     python.on("close", async (code) => {
       try {
-        if (code !== 0) throw new Error("Python process failed");
-        const predictions = JSON.parse(result);
-        const { flavor, aroma, body, acidity } = predictions;
+        console.log("Python process exited with code:", code);
+        console.log("Full output:", result);
+        if (errorOutput) console.error("Error output:", errorOutput);
+        
+        if (code !== 0) {
+          throw new Error(`Python process failed with code ${code}: ${errorOutput}`);
+        }
+
+        let predictions;
+        try {
+          predictions = JSON.parse(result);
+        } catch (e) {
+          console.error("Failed to parse Python output:", result);
+          throw new Error("Failed to parse prediction results");
+        }
+
+        if (predictions.error) {
+          throw new Error(predictions.error);
+        }
+
+        const { Flavor: flavor, Aroma: aroma, Body: body, Acidity: acidity } = predictions;
         const overall_quality = ((flavor + aroma + body + acidity) / 4).toFixed(2);
         const permanentImagePath = path.join(permanentUploadsDir, req.file.filename);
+        
+        // Ensure permanent uploads directory exists
+        if (!fs.existsSync(permanentUploadsDir)) {
+          fs.mkdirSync(permanentUploadsDir, { recursive: true });
+        }
+
         fs.copyFileSync(req.file.path, permanentImagePath);
 
         await pool.query(
