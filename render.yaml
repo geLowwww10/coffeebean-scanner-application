@@ -24,4 +24,4 @@ services:
 databases:
   - name: coffeebean
     databaseName: coffeebean_scanner_db
-    user: coffeebean
+    user: coffeebean 
