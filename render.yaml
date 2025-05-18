@@ -2,6 +2,7 @@ services:
   - type: web
     name: coffee-bean-detector
     env: node
+    plan: free
     buildCommand: npm install
     startCommand: node server.js
     envVars:
@@ -10,17 +11,26 @@ services:
       - key: PORT
         value: 8080
       - key: DB_USER
-        sync: false
+        fromDatabase:
+          name: coffeebean
+          property: user
       - key: DB_PASSWORD
-        sync: false
+        fromDatabase:
+          name: coffeebean
+          property: password
       - key: DB_HOST
-        sync: false
+        fromDatabase:
+          name: coffeebean
+          property: host
       - key: DB_PORT
         value: "5432"
       - key: DB_DATABASE
-        sync: false
+        fromDatabase:
+          name: coffeebean
+          property: database
 
 databases:
   - name: coffeebean
     databaseName: coffeebean_scanner_db
-    user: coffeebean 
+    plan: free
+    ipAllowList: [] 
